@@ -34,8 +34,8 @@ def _update_config(config, params):
     return config
 
 
-def _fit(config_path, **kwargs):
-    with open(config_path) as stream:
+def _fit(**kwargs):
+    with open('configs/eval.yaml') as stream:
         base_config = yaml.safe_load(stream)
 
     if "config" in kwargs.keys():
@@ -51,8 +51,8 @@ def _fit(config_path, **kwargs):
     return update_cfg
 
 
-def _parse_args(config_path):
-    args = Dict(Fire(_fit(config_path)))
+def _parse_args():
+    args = Dict(Fire(_fit))
 
     # Cache the args as a text string to save them in the output dir later
     args_text = yaml.safe_dump(args.__dict__, default_flow_style=False)
@@ -61,7 +61,7 @@ def _parse_args(config_path):
 
 class ClassificationModel:
     def __init__(self, config_path: str):
-        self.args, self.args_text = _parse_args(config_path)
+        self.args, self.args_text = _parse_args()
 
         # might as well try to do something useful...
         self.args.pretrained = self.args.pretrained or not self.args.checkpoint
