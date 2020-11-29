@@ -1,13 +1,13 @@
 # Dataset / Model parameters
-data: 'dataset/splitted'  # path to dataset
-model: 'tf_efficientnet_b0'      # Name of model to train (default: "countception")
+data: 'dataset'  # path to dataset
+model: 'tf_efficientnet_b5'      # Name of model to train (default: "countception")
 pretrained: True          # Start with pretrained version of specified network (if avail)
 initial_checkpoint: ''    # Initialize model from this checkpoint (default: none)
 resume: ''                # Resume full model and optimizer state from checkpoint (default: none)
 no_resume_opt: False      # prevent resume of optimizer state when resuming model
 num_classes: 2            # number of label classes (default: 1000)
 gp: null                  # Global pool type, one of (fast, avg, max, avgmax, avgmaxc). Model default if None.
-img_size: 224             # Image patch size (default: None => model default)
+img_size: 456             # Image patch size (default: None => model default)
 crop_pct: null            # Input image center crop percent (for validation only)
 mean: null                # Override mean pixel value of dataset
 std: null                 # Override std deviation of of dataset
@@ -24,7 +24,7 @@ weight_decay: 0.0         # weight decay (default: 0.0001)
 clip_grad: null           # Clip gradient norm (default: None, no clipping)
 
 # Learning rate schedule parameters
-sched: 'plateau'          # LR scheduler (default: "step")
+sched: 'cosine'          # LR scheduler (default: "step")
 lr: 0.0001                # learning rate (default: 0.01)
 lr_noise: null            # learning rate noise on/off epoch percentages
 lr_noise_pct: 0.67        # learning rate noise limit percent (default: 0.67)
@@ -96,7 +96,7 @@ channels_last: False     # Use channels_last memory layout
 pin_mem: False           # Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.
 no_prefetcher: False     # disable fast prefetcher
 output: ''               # path to output folder (default: none, current dir)
-eval_metric: 'top1'      # Best metric (default: "top1"
+eval_metric: 'top1'      # Best metric (default: "top1")
 tta: 0                   # Test/inference time augmentation (oversampling) factor. 0=None (default: 0)
 local_rank: 0            #
 use_multi_epochs_loader: False # use the multi-epochs-loader to save time at the beginning of every epoch

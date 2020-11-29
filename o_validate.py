@@ -7,28 +7,19 @@ canonical PyTorch, standard Python style, and good performance. Repurpose as you
 
 Hacked together by Ross Wightman (https://github.com/rwightman)
 """
-import argparse
 import os
 import csv
 import glob
 import time
 import yaml
-import random
 import logging
-import itertools
 import torch
 import torch.nn as nn
 import torch.nn.parallel
-from torch.autograd import Variable
 from collections import OrderedDict
 from contextlib import suppress
 from fire import Fire
 from addict import Dict
-import numpy as np
-
-import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
 
 from timm.models import create_model, apply_test_time_pool, load_checkpoint, is_model, list_models
 from timm.data import Dataset, DatasetTar, create_loader, resolve_data_config, RealLabelsImagenet
@@ -37,7 +28,6 @@ from timm.utils import accuracy, AverageMeter, natural_key, setup_default_loggin
 has_apex = False
 try:
     from apex import amp
-
     has_apex = True
 except ImportError:
     pass
@@ -61,8 +51,8 @@ def _update_config(config, params):
     return config
 
 
-def _fit(**kwargs):
-    with open('configs/validate.yaml') as stream:
+def _fit(config_path, **kwargs):
+    with open(config_path) as stream:
         base_config = yaml.safe_load(stream)
 
     if "config" in kwargs.keys():
@@ -78,61 +68,12 @@ def _fit(**kwargs):
     return update_cfg
 
 
-def _parse_args():
-    args = Dict(Fire(_fit))
+def _parse_args(config_path):
+    args = Dict(Fire(_fit(config_path)))
 
     # Cache the args as a text string to save them in the output dir later
     args_text = yaml.safe_dump(args.__dict__, default_flow_style=False)
     return args, args_text
-
-
-def plot_confusion_matrix(cm, classes, args,
-                          normalize=False,
-                          title='Confusion matrix',
-                          cmap=plt.cm.Blues):
-    """
-    This function prints and plots the confusion matrix.
-    Normalization can be applied by setting `normalize=True`.
-    """
-    plt.imshow(cm, interpolation='nearest', cmap=cmap)
-    plt.title(title)
-    plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
-    plt.yticks(tick_marks, classes)
-
-    if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-
-    thresh = cm.max() / 2.
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, cm[i, j],
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
-
-    plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-
-    plt.savefig(f'{os.path.dirname(args.checkpoint)}/{os.path.basename(args.checkpoint)}_confusion_matrix.png')
-
-    plt.clf()
-    plt.cla()
-    plt.close()
-
-
-def create_precision_recall_fscore_report(y_label, y_predict, args):
-    # compute the confusion matrix
-    confusion_mtx = confusion_matrix(y_label, y_predict)
-    # plot the confusion matrix
-    plot_labels = ['akiec', 'bcc', 'bkl', 'df', 'nv', 'vasc', 'mel']
-    plot_confusion_matrix(confusion_mtx, plot_labels, args)
-
-    # Generate a classification report
-    report = classification_report(y_label, y_predict, target_names=plot_labels)
-    with open(f'{os.path.dirname(args.checkpoint)}/{os.path.basename(args.checkpoint)}_report.txt', "w") as text_file:
-        text_file.write(report)
-    print(report)
 
 
 def validate(args):
@@ -232,9 +173,6 @@ def validate(args):
             input = input.contiguous(memory_format=torch.channels_last)
         model(input)
         end = time.time()
-
-        y_label = []
-        y_predict = []
         for batch_idx, (input, target) in enumerate(loader):
             if args.no_prefetcher:
                 target = target.cuda()
@@ -249,10 +187,6 @@ def validate(args):
             if valid_labels is not None:
                 output = output[:, valid_labels]
             loss = criterion(output, target)
-
-            prediction = output.max(1, keepdim=True)[1]
-            y_label.extend(target.cpu().numpy())
-            y_predict.extend(np.squeeze(prediction.cpu().numpy().T))
 
             if real_labels is not None:
                 real_labels.add_result(output)
@@ -278,8 +212,6 @@ def validate(args):
                         rate_avg=input.size(0) / batch_time.avg,
                         loss=losses, top1=top1, top5=top5))
 
-    create_precision_recall_fscore_report(y_label, y_predict, args)
-
     if real_labels is not None:
         # real labels mode replaces topk values at the end
         top1a, top5a = real_labels.get_accuracy(k=1), real_labels.get_accuracy(k=5)
@@ -301,9 +233,7 @@ def validate(args):
 
 def main():
     setup_default_logging()
-    # args = parser.parse_args()
-
-    args, args_text = _parse_args()
+    args, args_text = _parse_args('configs/validate.yaml')
 
     model_cfgs = []
     model_names = []
