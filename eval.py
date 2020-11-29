@@ -7,12 +7,14 @@ Hacked together by / Copyright 2020 Ross Wightman (https://github.com/rwightman)
 
 --- Usage: ---
 
-model = ClassificationModel('configs/eval.yaml')
+model = ClassificationModel()
 img = Image.open("image.jpg")
 out = model.eval(img)
 print(out)
 
 """
+import PIL
+from numpy.core.fromnumeric import argmax
 import yaml
 from fire import Fire
 from addict import Dict
@@ -60,7 +62,7 @@ def _parse_args():
 
 
 class ClassificationModel:
-    def __init__(self, config_path: str):
+    def __init__(self):
         self.args, self.args_text = _parse_args()
 
         # might as well try to do something useful...
@@ -86,7 +88,8 @@ class ClassificationModel:
         ])
 
         if self.args.num_gpu > 1:
-            self.model = torch.nn.DataParallel(self.model, device_ids=list(range(self.args.num_gpu))).cuda()
+            self.model = torch.nn.DataParallel(
+                self.model, device_ids=list(range(self.args.num_gpu))).cuda()
         else:
             self.model = self.model.cuda()
             # self.model = self.model.cpu()
@@ -103,3 +106,28 @@ class ClassificationModel:
             labels = self.softmax(labels)
             labels = labels.cpu()
             return labels.numpy()
+
+
+if __name__ == "__main__":
+    import os
+    import numpy as np
+    import pandas as pd
+    from PIL import Image
+
+    model = ClassificationModel()
+    dict_submission = {'image_id': [],
+                  'label': []}
+
+    test_images = '../input/cassava-leaf-disease-classification/test_images'
+    for image in os.listdir(test_images):
+        image_path = os.path.join(test_images, image)
+        pil_image = Image.open(image_path)
+
+        output = model.eval(pil_image)
+        output = np.squeeze(output)
+        
+        dict_submission['image_id'].append(image)
+        dict_submission['label'].append(np.argmax(output))
+
+    submission = pd.DataFrame.from_dict(dict_submission)
+    submission.to_csv('submission.csv', index=False)    

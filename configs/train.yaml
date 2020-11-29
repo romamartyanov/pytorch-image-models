@@ -1,18 +1,18 @@
 # Dataset / Model parameters
 data: 'dataset'  # path to dataset
-model: 'tf_efficientnet_b5'      # Name of model to train (default: "countception")
+model: 'resnext50_32x4d'      # Name of model to train (default: "countception")
 pretrained: True          # Start with pretrained version of specified network (if avail)
 initial_checkpoint: ''    # Initialize model from this checkpoint (default: none)
 resume: ''                # Resume full model and optimizer state from checkpoint (default: none)
 no_resume_opt: False      # prevent resume of optimizer state when resuming model
 num_classes: 5            # number of label classes (default: 1000)
 gp: null                  # Global pool type, one of (fast, avg, max, avgmax, avgmaxc). Model default if None.
-img_size: 456             # Image patch size (default: None => model default)
+img_size: 512             # Image patch size (default: None => model default)
 crop_pct: null            # Input image center crop percent (for validation only)
 mean: null                # Override mean pixel value of dataset
 std: null                 # Override std deviation of of dataset
 interpolation: ''         # Image resize interpolation type (overrides model)
-batch_size: 2             # input batch size for training (default: 32)
+batch_size: 32            # input batch size for training (default: 32)
 validation_batch_size_multiplier: 1 # ratio of validation batch size to training batch size (default: 1)
 
 # Optimizer parameters
@@ -43,7 +43,7 @@ decay_rate: 0.1           # LR decay rate (default: 0.1)
 
 # Augmentation & regularization parameters
 no_aug: False            # Disable all training augmentation, override other train aug args
-scale: [1, 1]            # Random resize scale (default: 0.08 1.0)
+scale: [0.33, 1]            # Random resize scale (default: 0.08 1.0)
 ratio: [0.8, 1.2]        # Random resize aspect ratio (default: 0.75 1.33)
 hflip: 0.5               # Horizontal flip training aug probability
 vflip: 0.0               # Vertical flip training aug probability

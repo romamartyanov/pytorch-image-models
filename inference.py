@@ -49,7 +49,7 @@ def _fit(**kwargs):
 
 
 def _parse_args(config_path):
-    args = Dict(Fire(_fit)
+    args = Dict(Fire(_fit))
 
     # Cache the args as a text string to save them in the output dir later
     args_text = yaml.safe_dump(args.__dict__, default_flow_style=False)

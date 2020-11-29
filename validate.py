@@ -62,7 +62,7 @@ def _update_config(config, params):
 
 
 def _fit(**kwargs):
-    with open('configs/validate.yaml') as stream:
+    with open('validate.yaml') as stream:
         base_config = yaml.safe_load(stream)
 
     if "config" in kwargs.keys():
@@ -125,7 +125,7 @@ def create_precision_recall_fscore_report(y_label, y_predict, args):
     # compute the confusion matrix
     confusion_mtx = confusion_matrix(y_label, y_predict)
     # plot the confusion matrix
-    plot_labels = ['akiec', 'bcc', 'bkl', 'df', 'nv', 'vasc', 'mel']
+    plot_labels = ['0', '1', '2', '3', '4']
     plot_confusion_matrix(confusion_mtx, plot_labels, args)
 
     # Generate a classification report
