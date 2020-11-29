@@ -78,7 +78,6 @@ def _fit(**kwargs):
         merged_cfg = _update_config(base_config, cfg_yaml)
     else:
         merged_cfg = base_config
-    print(kwargs)
     update_cfg = _update_config(merged_cfg, kwargs)
     return update_cfg
 
@@ -104,7 +103,6 @@ def set_deterministic(seed=42, precision=13):
 def main():
     setup_default_logging()
     args, args_text = _parse_args()
-    exit()
     set_deterministic(args.seed)
 
     args.prefetcher = not args.no_prefetcher

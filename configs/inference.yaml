@@ -2,8 +2,8 @@ data: 'dataset/test'          # path to dataset
 output_dir: 'output/'         # path to output files
 model: 'tf_efficientnet_b5'   # model architecture (default: dpn92)
 workers: 4                    # number of McD loading workers (default: 2
-batch_size: 256               # mini-batch size (default: 256)
-img_size: 224                 # Input image dimension
+batch_size: 2                 # mini-batch size (default: 256)
+img_size: 456                 # Input image dimension
 mean: null                    # Override mean pixel value of dataset
 std: null                     # Override std deviation of of dataset
 interpolation: ''             # Image resize interpolation type (overrides model)
